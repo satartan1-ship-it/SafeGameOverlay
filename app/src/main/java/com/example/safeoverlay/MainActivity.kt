@@ -2,10 +2,8 @@ package com.example.safeoverlay
 
 import android.app.Activity
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
-import android.view.Gravity
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.LinearLayout
@@ -31,45 +29,49 @@ class MainActivity : Activity() {
                 setPadding(0, 8, 0, 8)
             }
 
-        content.addView(text("POTATO MODE", 27f))
+        content.addView(text("POTATO MODE · REDMI NOTE 13", 23f))
         content.addView(text(
-            "Профиль низкой графики для Standoff 2\n\n" +
-            "Приложение не использует плавающие окна, не читает данные игры и не меняет её файлы. " +
-            "Настройки ниже нужно применить в самой игре.",
+            "Быстрый запуск Standoff 2 через Game Turbo и инструкция для минимальной нагрузки.",
             15f, 0xFFB9C3D2.toInt()
         ))
 
-        content.addView(text("НАСТРОЙКИ В ИГРЕ", 18f))
+        content.addView(text("1. ДОБАВЬ STANDOFF 2 В GAME TURBO", 18f))
         content.addView(text(
-            "• Качество графики: низкое\n" +
-            "• Тени: выключить\n" +
-            "• Сглаживание: выключить\n" +
-            "• Эффекты: минимум\n" +
-            "• Разрешение: минимальное доступное\n" +
-            "• Частота кадров: максимальная стабильная для устройства",
-            16f
+            "Открой приложение «Безопасность» → Game Turbo → «Добавить игру» → Standoff 2. " +
+            "Затем запускай игру из Game Turbo, чтобы игровой режим применялся.",
+            15f
         ))
-
-        content.addView(text("ПЕРЕД ЗАПУСКОМ", 18f))
-        content.addView(text(
-            "• Закрой тяжёлые приложения\n" +
-            "• Отключи энергосбережение, если оно ограничивает производительность\n" +
-            "• Дай телефону остыть, если он нагрелся",
-            16f
-        ))
-
-        content.addView(actionButton("ЗАПУСТИТЬ STANDOFF 2") { launchGame() })
-        content.addView(actionButton("ОТКРЫТЬ НАСТРОЙКИ ЭКРАНА") {
-            runCatching { startActivity(Intent(Settings.ACTION_DISPLAY_SETTINGS)) }
-                .onFailure { toast("Настройки экрана недоступны") }
+        content.addView(actionButton("ОТКРЫТЬ «БЕЗОПАСНОСТЬ» / GAME TURBO") {
+            openPackage("com.miui.securitycenter", "Не удалось открыть «Безопасность». Открой её вручную.")
         })
-        content.addView(actionButton("ОТКРЫТЬ НАСТРОЙКИ БАТАРЕИ") {
+
+        content.addView(text("2. НАСТРОЙ GPU (ЕСЛИ ПУНКТ ДОСТУПЕН)", 18f))
+        content.addView(text(
+            "В Game Turbo открой Standoff 2 → «По умолчанию» или «Настроить» → GPU settings / Настройки GPU. " +
+            "Выбери Custom / Пользовательский и поставь минимальное разрешение, выключи Anti-aliasing " +
+            "(сглаживание) и оставь минимальное качество фильтрации текстур. Если таких пунктов нет — " +
+            "твоя версия Game Turbo их не поддерживает.",
+            15f
+        ))
+
+        content.addView(text("3. В САМОЙ ИГРЕ", 18f))
+        content.addView(text(
+            "• Графика: низкая\n• Тени и дополнительные эффекты: выкл.\n" +
+            "• Сглаживание: выкл. (если есть)\n• FPS: максимальный стабильный",
+            15f
+        ))
+
+        content.addView(text("4. ЗАПУСК", 18f))
+        content.addView(actionButton("ЗАПУСТИТЬ STANDOFF 2") { launchGame() })
+        content.addView(actionButton("НАСТРОЙКИ БАТАРЕИ") {
             runCatching { startActivity(Intent(Settings.ACTION_BATTERY_SAVER_SETTINGS)) }
                 .onFailure { toast("Настройки батареи недоступны") }
         })
+
         content.addView(text(
-            "Важно: Android не разрешает стороннему приложению напрямую переключать графические параметры Standoff 2. " +
-            "Этот профиль помогает быстро выставить их вручную; прирост FPS не гарантируется.",
+            "Честно: Android не даёт обычному приложению менять внутренние графические параметры Standoff 2. " +
+            "Эта версия открывает штатный Game Turbo и ведёт к доступным настройкам Xiaomi; " +
+            "она не внедряет DLL и не меняет файлы игры.",
             13f, 0xFF8F9BAD.toInt()
         ))
 
@@ -86,19 +88,19 @@ class MainActivity : Activity() {
         Button(this).apply {
             text = label
             isAllCaps = false
-            textSize = 15f
+            textSize = 14f
             setOnClickListener { action() }
         }
 
+    private fun openPackage(packageName: String, error: String) {
+        val intent = packageManager.getLaunchIntentForPackage(packageName)
+        if (intent == null) toast(error) else startActivity(intent)
+    }
+
     private fun launchGame() {
-        val intent = packageManager.getLaunchIntentForPackage("com.axlebolt.standoff2")
-        if (intent == null) {
-            toast("Standoff 2 не найдена. Установи игру из официального магазина.")
-        } else {
-            startActivity(intent)
-        }
+        openPackage("com.axlebolt.standoff2", "Standoff 2 не найдена. Установи игру из официального магазина.")
     }
 
     private fun toast(message: String) =
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
 }
